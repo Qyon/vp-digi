@@ -1,0 +1,39 @@
+name: Build binaries and release
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
+      - name: Run PlatformIO
+        run: pio run
+      - name: Prepare release files
+        run: |
+          mkdir outfiles
+          cp .pio/build/bluepill_f103c8/firmware.bin "outfiles/BluePill_f103c8.bin"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          prerelease: true
+          name: Release ${{ github.ref }}
+          files: outfiles/*.bin
+
