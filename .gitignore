@@ -99,3 +99,6 @@ local.properties
 
 Debug/
 Release/
+.pio
+compilers.yaml
+.idea
